@@ -1,0 +1,48 @@
+[
+  {
+    "id": "BENCH-001",
+    "category": "grounded_fact",
+    "question": "What percentage growth was reported in enterprise cloud subscriptions?",
+    "sample_document_text": "In the fourth quarter of 2024, enterprise cloud subscriptions surged by 28% year-over-year, outpacing all other business segments.",
+    "expected_answer_keywords": ["28%", "cloud subscriptions"],
+    "must_contain_citation": true,
+    "should_abstain": false
+  },
+  {
+    "id": "BENCH-002",
+    "category": "grounded_fact",
+    "question": "What is the primary factor contributing to operating margin expansion?",
+    "sample_document_text": "Operating margin expanded to 21.4% driven by automation in data center logistics and supply chain optimization.",
+    "expected_answer_keywords": ["automation", "supply chain"],
+    "must_contain_citation": true,
+    "should_abstain": false
+  },
+  {
+    "id": "BENCH-003",
+    "category": "negative_control",
+    "question": "What was the company's total revenue in Mars colonial credits for fiscal year 2024?",
+    "sample_document_text": "All financial statements are prepared in accordance with GAAP and denominated exclusively in US Dollars.",
+    "expected_answer_keywords": [],
+    "must_contain_citation": false,
+    "should_abstain": true
+  },
+  {
+    "id": "BENCH-004",
+    "category": "negative_control",
+    "question": "What were the names of the CEO's personal pet dogs mentioned in the annual filing?",
+    "sample_document_text": "The Board of Directors approved executive compensation packages as detailed in Table 4.",
+    "expected_answer_keywords": [],
+    "must_contain_citation": false,
+    "should_abstain": true
+  },
+  {
+    "id": "BENCH-005",
+    "category": "comparison",
+    "question": "Compare the 2023 and 2024 operating margin projections.",
+    "doc1_text": "For 2023, the projected operating margin was targeted between 16% and 18%.",
+    "doc2_text": "The updated 2024 guidance projects operating margins between 20% and 22%.",
+    "expected_relationship": "DIFFERENCE",
+    "must_contain_citation": true,
+    "should_abstain": false
+  }
+]
