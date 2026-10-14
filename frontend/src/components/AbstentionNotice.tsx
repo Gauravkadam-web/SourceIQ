@@ -6,9 +6,11 @@ import { AlertCircle, FileSearch, HelpCircle } from "lucide-react";
 interface AbstentionNoticeProps {
   question: string;
   answerText?: string;
+  explanation?: string;
 }
 
-export default function AbstentionNotice({ question, answerText }: AbstentionNoticeProps) {
+export default function AbstentionNotice({ question, answerText, explanation }: AbstentionNoticeProps) {
+  const displayText = explanation || answerText || "I could not find sufficient evidence in the uploaded documents to answer your question.";
   return (
     <div
       className="glass-panel"
@@ -44,7 +46,7 @@ export default function AbstentionNotice({ question, answerText }: AbstentionNot
           </div>
 
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: "1.6", marginBottom: "14px" }}>
-            {answerText || "I could not find sufficient evidence in the uploaded documents to answer your question."}
+            {displayText}
           </p>
 
           <div
