@@ -1,0 +1,68 @@
+# ==============================================================================
+# SourceIQ — Production Docker Compose
+# NOTE: Docker is for PRODUCTION DEPLOYMENT ONLY.
+# Local development strictly uses native Windows installation as per AGENTS.md Rule 6.
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: sourceiq_db_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-replace-with-secure-db-password}
+      POSTGRES_DB: ${POSTGRES_DB:-sourceiq_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-sourceiq_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sourceiq_backend_prod
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_URL=postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-replace-with-secure-db-password}@db:5432/${POSTGRES_DB:-sourceiq_db}
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_LLM_MODEL=${GEMINI_LLM_MODEL:-gemini-3.1-flash-lite}
+      - GEMINI_EMBEDDING_MODEL=${GEMINI_EMBEDDING_MODEL:-gemini-embedding-001}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+    volumes:
+      - backend_uploads:/app/data/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sourceiq_frontend_prod
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+
+volumes:
+  pgdata_prod:
+  backend_uploads:
