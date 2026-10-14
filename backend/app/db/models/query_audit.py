@@ -35,7 +35,7 @@ class QueryRun(Base):
     # Relationships
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="query_runs")
     citations: Mapped[List["CitationLog"]] = relationship(
-        "CitationLog", back_populates="query_run", cascade="all, delete-orphan"
+        "CitationLog", back_populates="query_run", cascade="all, delete-orphan", passive_deletes=True
     )
 
 

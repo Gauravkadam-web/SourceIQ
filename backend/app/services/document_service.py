@@ -75,12 +75,17 @@ class DocumentService:
                 logger.error(f"Cannot process document: {doc_id} not found in database.")
                 return
 
+            doc_id_val = doc.id
+            workspace_id_val = doc.workspace_id
+            filename_val = doc.filename
+            file_path_val = doc.file_path
+
             try:
                 # 1. State: PARSING
                 doc.status = "PARSING"
                 db.commit()
 
-                pages = ParserService.extract_pages(doc.file_path)
+                pages = ParserService.extract_pages(file_path_val)
                 doc.page_count = len(pages)
                 db.commit()
 
@@ -96,13 +101,16 @@ class DocumentService:
                 chunk_texts = [c.content for c in chunks_data]
                 embeddings = await EmbeddingService.generate_chunk_embeddings(chunk_texts)
 
-                # 4. Bulk insert DocumentChunks
+                # 4. Clean any existing chunks for idempotency / safe retry
+                db.query(DocumentChunk).filter(DocumentChunk.document_id == doc_id_val).delete()
+
+                # 5. Bulk insert DocumentChunks
                 db_chunks = []
                 for chunk_data, embedding in zip(chunks_data, embeddings):
                     db_chunks.append(
                         DocumentChunk(
-                            document_id=doc.id,
-                            workspace_id=doc.workspace_id,
+                            document_id=doc_id_val,
+                            workspace_id=workspace_id_val,
                             page_number=chunk_data.page_number,
                             chunk_index=chunk_data.chunk_index,
                             content=chunk_data.content,
@@ -116,14 +124,16 @@ class DocumentService:
                 doc.chunk_count = len(db_chunks)
                 doc.error_message = None
                 db.commit()
-                logger.info(f"Document {doc.id} ({doc.filename}) successfully ingested with {len(db_chunks)} chunks.")
+                logger.info(f"Document {doc_id_val} ({filename_val}) successfully ingested with {len(db_chunks)} chunks.")
 
             except Exception as e:
-                logger.error(f"Ingestion failed for document {doc.id}: {str(e)}", exc_info=True)
+                logger.error(f"Ingestion failed for document {doc_id_val}: {str(e)}", exc_info=True)
                 db.rollback()
-                doc.status = "FAILED"
-                doc.error_message = str(e)
-                db.commit()
+                failed_doc = db.get(Document, doc_id_val)
+                if failed_doc:
+                    failed_doc.status = "FAILED"
+                    failed_doc.error_message = str(e)
+                    db.commit()
         finally:
             if db_created and db:
                 db.close()

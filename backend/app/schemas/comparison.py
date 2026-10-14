@@ -32,3 +32,4 @@ class ComparisonResponse(BaseModel):
     latency_ms: float
 
     model_config = ConfigDict(from_attributes=True)
+ 

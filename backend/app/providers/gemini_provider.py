@@ -14,7 +14,10 @@ class GeminiLLMProvider(LLMProviderInterface):
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or settings.GEMINI_API_KEY
-        self.model = model or settings.GEMINI_LLM_MODEL
+        m = model or settings.GEMINI_LLM_MODEL
+        if m in ("gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-pro"):
+            m = "gemini-3.1-flash-lite"
+        self.model = m
         if not self.api_key:
             logger.warning("GEMINI_API_KEY is not set. Gemini calls will fail until configured.")
 
@@ -59,11 +62,14 @@ class GeminiLLMProvider(LLMProviderInterface):
 
 
 class GeminiEmbeddingProvider(EmbeddingProviderInterface):
-    """Google Gemini embedding provider implementation (text-embedding-004, 768 dims)."""
+    """Google Gemini embedding provider implementation."""
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or settings.GEMINI_API_KEY
-        self.model = model or settings.GEMINI_EMBEDDING_MODEL
+        m = model or settings.GEMINI_EMBEDDING_MODEL
+        if m in ("text-embedding-004", "models/text-embedding-004"):
+            m = "gemini-embedding-001"
+        self.model = m
         self._dim = settings.EMBEDDING_DIMENSIONS
 
     def _get_client(self) -> genai.Client:
@@ -75,19 +81,27 @@ class GeminiEmbeddingProvider(EmbeddingProviderInterface):
     def dimension(self) -> int:
         return self._dim
 
+    def _extract_values(self, result: Any) -> List[float]:
+        if hasattr(result, "embeddings") and result.embeddings:
+            return result.embeddings[0].values
+        if hasattr(result, "embedding") and result.embedding:
+            return result.embedding.values
+        raise ProviderError("Unexpected embedding response structure from Gemini API.")
+
     async def embed_texts(self, texts: List[str]) -> List[List[float]]:
         if not texts:
             return []
         try:
             client = self._get_client()
+            config = types.EmbedContentConfig(output_dimensionality=self._dim)
             embeddings: List[List[float]] = []
-            # Gemini embeds per text or batch
             for text in texts:
                 result = client.models.embed_content(
                     model=self.model,
                     contents=text,
+                    config=config,
                 )
-                embeddings.append(result.embedding.values)
+                embeddings.append(self._extract_values(result))
             return embeddings
         except Exception as e:
             logger.error(f"Gemini embedding batch error: {str(e)}")
@@ -96,11 +110,13 @@ class GeminiEmbeddingProvider(EmbeddingProviderInterface):
     async def embed_query(self, query: str) -> List[float]:
         try:
             client = self._get_client()
+            config = types.EmbedContentConfig(output_dimensionality=self._dim)
             result = client.models.embed_content(
                 model=self.model,
                 contents=query,
+                config=config,
             )
-            return result.embedding.values
+            return self._extract_values(result)
         except Exception as e:
             logger.error(f"Gemini query embedding error: {str(e)}")
             raise ProviderError(f"Gemini query embedding failed: {str(e)}")

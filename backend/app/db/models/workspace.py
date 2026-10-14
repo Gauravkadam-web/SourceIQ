@@ -27,8 +27,8 @@ class Workspace(Base):
 
     # Relationships
     documents: Mapped[List["Document"]] = relationship(
-        "Document", back_populates="workspace", cascade="all, delete-orphan"
+        "Document", back_populates="workspace", cascade="all, delete-orphan", passive_deletes=True
     )
     query_runs: Mapped[List["QueryRun"]] = relationship(
-        "QueryRun", back_populates="workspace", cascade="all, delete-orphan"
+        "QueryRun", back_populates="workspace", cascade="all, delete-orphan", passive_deletes=True
     )

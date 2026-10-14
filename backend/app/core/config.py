@@ -1,6 +1,6 @@
 import os
 from typing import List, Literal
-from pydantic import field_validator
+from pydantic import field_validator, Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,9 +36,9 @@ class Settings(BaseSettings):
     EMBEDDING_PROVIDER: Literal["gemini", "openai", "ollama"] = "gemini"
 
     # Google Gemini Settings
-    GEMINI_API_KEY: str = ""
-    GEMINI_LLM_MODEL: str = "gemini-2.5-flash"
-    GEMINI_EMBEDDING_MODEL: str = "text-embedding-004"
+    GEMINI_API_KEY: str = Field(default="", validation_alias=AliasChoices("GEMINI_API_KEY", "GOOGLE_API_KEY", "gemini_api_key", "google_api_key"))
+    GEMINI_LLM_MODEL: str = "gemini-3.1-flash-lite"
+    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
 
     # OpenAI Settings (Alternative / Switch)
     OPENAI_API_KEY: str = ""
@@ -55,7 +55,11 @@ class Settings(BaseSettings):
     PROVIDER_MAX_RETRIES: int = 3
 
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"),
+        env_file=[
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), ".env"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"),
+            ".env",
+        ],
         env_file_encoding="utf-8",
         extra="ignore",
     )
