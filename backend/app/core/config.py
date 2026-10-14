@@ -25,8 +25,12 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql+psycopg://postgres:1234@localhost:5432/sourceiq_db"
 
-    # Local Storage
+    # Storage (Local disk for development, Supabase Storage for production)
+    STORAGE_BACKEND: Literal["local", "supabase"] = "local"
     STORAGE_LOCAL_DIR: str = "./data/uploads"
+    SUPABASE_URL: str = Field(default="", validation_alias=AliasChoices("SUPABASE_URL", "supabase_url", "NEXT_PUBLIC_SUPABASE_URL"))
+    SUPABASE_KEY: str = Field(default="", validation_alias=AliasChoices("SUPABASE_KEY", "SUPABASE_SERVICE_ROLE_KEY", "supabase_key", "supabase_service_role_key"))
+    SUPABASE_STORAGE_BUCKET: str = "sourceiq-documents"
     MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
     MAX_DOCUMENTS_PER_WORKSPACE: int = 10
     ALLOWED_MIME_TYPES: str = "application/pdf"

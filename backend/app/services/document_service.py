@@ -85,7 +85,8 @@ class DocumentService:
                 doc.status = "PARSING"
                 db.commit()
 
-                pages = ParserService.extract_pages(file_path_val)
+                local_path = StorageService.ensure_local_copy(workspace_id_val, doc_id_val, file_path_val)
+                pages = ParserService.extract_pages(local_path)
                 doc.page_count = len(pages)
                 db.commit()
 
