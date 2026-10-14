@@ -7,6 +7,7 @@ class QueryRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=1000, description="User question to be answered from evidence.")
     document_ids: Optional[List[uuid.UUID]] = Field(default=None, description="Optional document filter scope.")
     top_k: Optional[int] = Field(default=5, ge=1, le=10, description="Maximum number of chunks to retrieve.")
+    similarity_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Optional similarity threshold override.")
 
 
 class CitationDetail(BaseModel):

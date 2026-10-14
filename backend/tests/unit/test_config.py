@@ -6,7 +6,7 @@ def test_config_defaults():
     assert settings.PROJECT_NAME == "SourceIQ"
     assert settings.API_V1_STR == "/api/v1"
     assert settings.EMBEDDING_DIMENSIONS == 768
-    assert settings.SIMILARITY_THRESHOLD == 0.65
+    assert settings.SIMILARITY_THRESHOLD == 0.48
     assert settings.LLM_PROVIDER in ["gemini", "openai", "ollama"]
     assert settings.EMBEDDING_PROVIDER in ["gemini", "openai", "ollama"]
 

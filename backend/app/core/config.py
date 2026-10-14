@@ -47,8 +47,22 @@ class Settings(BaseSettings):
 
     # Vector & Retrieval
     EMBEDDING_DIMENSIONS: int = 768
-    SIMILARITY_THRESHOLD: float = 0.65
+    SIMILARITY_THRESHOLD: float = 0.48
     TOP_K_RETRIEVAL: int = 5
+
+    @field_validator("SIMILARITY_THRESHOLD", mode="before")
+    @classmethod
+    def calibrate_threshold(cls, v: object) -> float:
+        if v is None:
+            return 0.48
+        try:
+            val = float(v)  # type: ignore[arg-type]
+            if val == 0.65:
+                # Recalibrate legacy default to empirical 0.48
+                return 0.48
+            return val
+        except (ValueError, TypeError):
+            return 0.48
 
     # External Provider Safeguards
     PROVIDER_TIMEOUT_SECONDS: int = 15

@@ -74,6 +74,7 @@ class ComparisonService:
                 query_vector=query_vector,
                 document_ids=[doc.id],
                 top_k=request.top_k_per_document or 3,
+                similarity_threshold=request.similarity_threshold,
             )
             doc_chunks_map[doc.id] = chunks
             total_retrieved += len(chunks)

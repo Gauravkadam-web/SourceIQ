@@ -8,6 +8,7 @@ class ComparisonRequest(BaseModel):
     topic: str = Field(..., min_length=3, max_length=1000, description="Topic or question to compare across documents.")
     document_ids: List[uuid.UUID] = Field(..., min_length=2, max_length=5, description="At least two document IDs to compare.")
     top_k_per_document: Optional[int] = Field(default=3, ge=1, le=5, description="Number of evidence chunks to retrieve per document.")
+    similarity_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Optional similarity threshold override.")
 
 
 class DocumentFinding(BaseModel):

@@ -62,6 +62,7 @@ class QAService:
             query_vector=query_vector,
             document_ids=request.document_ids,
             top_k=request.top_k or 5,
+            similarity_threshold=request.similarity_threshold,
         )
 
         # 5. Abstention if insufficient evidence
