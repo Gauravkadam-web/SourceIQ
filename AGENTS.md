@@ -178,8 +178,18 @@ Do not hardcode `localhost`, a machine-specific hostname, port, drive path, or p
 
 ## 7. Configuration and Secrets
 
-Use one clearly defined configuration module per application/runtime. Application code should read settings through that module rather than accessing environment variables throughout the codebase.
+Use clearly defined configuration modules per application/runtime. Application code should read settings through that module rather than accessing environment variables directly throughout the codebase.
 
+### Strict Environment File Rules for AI Agents:
+- **Agents must NEVER create, edit, or touch `.env` files**: Real `.env` files belong solely to the user. The AI agent is strictly forbidden from creating, writing, or overwriting `.env` files.
+- **Zero Secrets Access or Leakage**: The AI agent must NEVER read, print, log, or leak credentials, keys, or passwords from real `.env` files.
+- **All changes go to `.env.example` only**: Whenever new configuration variables are introduced, the agent must ONLY document and update the corresponding `.env.example` files with safe, generic placeholders (e.g. `replace-with-your-key`).
+- **Three Separate Environment Scopes**: The project strictly enforces 3 distinct, independent environment files:
+  1. **Root**: `/.env.example` (Root orchestration, shared docker-compose / repository variables).
+  2. **Backend**: `/backend/.env.example` (FastAPI, PostgreSQL database URL, AI provider keys, retrieval parameters).
+  3. **Frontend**: `/frontend/.env.example` (Next.js public API URLs, client-side limits).
+
+### General Security & Secrets Principles:
 - Validate required configuration at startup.
 - Fail clearly when required settings are missing or invalid.
 - Do not silently fall back to unsafe credentials or production-like defaults.
