@@ -1,5 +1,7 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from app.core.config import settings
 from app.core.logging import logger
 from app.core.errors import (
@@ -8,6 +10,23 @@ from app.core.errors import (
     global_exception_handler,
 )
 from app.api.v1.router import api_router
+from app.db.session import engine
+from app.db.models import Base
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager that automatically verifies and creates database tables on startup."""
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+            conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
+            conn.commit()
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database extensions and tables verified/created successfully on startup.")
+    except Exception as exc:
+        logger.warning(f"Database auto-init note: {exc}")
+    yield
 
 
 def create_application() -> FastAPI:
@@ -17,6 +36,7 @@ def create_application() -> FastAPI:
         version="0.1.0",
         docs_url="/docs",
         redoc_url="/redoc",
+        lifespan=lifespan,
     )
 
     # CORS Middleware
