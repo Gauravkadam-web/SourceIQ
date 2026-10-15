@@ -180,9 +180,23 @@ npm run build
 
 ---
 
-## 🐳 Production Deployment (Docker Compose)
+## ☁️ Cloud Production Deployment (Render + Supabase + Vercel)
 
-Docker is configured **strictly for production environments**:
+SourceIQ is production-verified on **Render (Backend) + Supabase (PostgreSQL 18, `pgvector`, Storage Bucket) + Vercel (Next.js 14)**:
+
+- **Live Backend API**: `https://sourceiq-m08k.onrender.com/api/v1`
+- **Interactive Swagger Docs**: `https://sourceiq-m08k.onrender.com/docs`
+- **Managed Database & Vectors**: Supabase PostgreSQL with `pgvector` v0.8.2 (`16ms` query latency)
+- **Persistent PDF Storage**: Supabase Storage private bucket `sourceiq-documents` with transparent caching for ephemeral containers
+- **Frontend CDN**: Vercel standalone Next.js deployment
+
+For detailed setup instructions, see [docs/progress.md](docs/progress.md) and [docs/technicaldebt.md](docs/technicaldebt.md).
+
+---
+
+## 🐳 Production Deployment (Docker Compose Alternative)
+
+Docker is configured for standalone on-premise production environments:
 
 ```bash
 # Launch production stack (Backend + Frontend + PostgreSQL with pgvector)
